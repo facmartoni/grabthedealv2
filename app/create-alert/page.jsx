@@ -9,6 +9,7 @@ import { searchCity } from "@/app/actions/search-city/search-city";
 import { searchProducts } from "@/app/actions/search-products/search-products";
 import ThemeSwitch from "@/components/theme-switch";
 import { ThemeProvider, useTheme } from "@/components/theme-provider";
+import LoaderSpinner from "@/components/loader-spinner/loader-spinner";
 
 function AlertCreationPageContent() {
   const { theme } = useTheme();
@@ -23,6 +24,7 @@ function AlertCreationPageContent() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [finalCity, setFinalCity] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSearching, setIsSearching] = useState(false); // Added state for loading spinner
 
   const handleProductSearch = (value) => {
     setProduct(value);
@@ -49,17 +51,21 @@ function AlertCreationPageContent() {
   };
 
   const handleCitySelect = async (selectedCity) => {
+    console.log("Selected city:", selectedCity);
     setCity(selectedCity);
     setShowDropdown(false);
     setCityOptions([]);
 
     setIsLoadingCities(true);
-    const result = await searchCity(selectedCity.slice(0, -1), "true");
+    console.log("Loading cities for:", selectedCity.slice(0, -1));
+    const result = await searchCity(selectedCity, "true");
     setIsLoadingCities(false);
 
     if (result.success && result.data) {
+      console.log("City search result:", result.data.data);
       setFinalCity(result.data.data);
     } else {
+      console.log("City search failed:", result.error);
       setFinalCity("");
     }
   };
@@ -73,6 +79,7 @@ function AlertCreationPageContent() {
     }
 
     setErrorMessage(""); // Clear error message if validation passes
+    setIsSearching(true); // Set loading state to true
 
     try {
       const minPriceValue = noPriceRange
@@ -100,6 +107,8 @@ function AlertCreationPageContent() {
         30,
       );
 
+      console.log("Search result:", result); // Log the response
+
       if (result.success) {
         setSearchResult(result.data);
       } else {
@@ -109,13 +118,17 @@ function AlertCreationPageContent() {
       setErrorMessage(
         "An error occurred while searching for products. Please try again.",
       );
+    } finally {
+      setIsSearching(false); // Reset loading state
     }
   };
 
   const handleCityInputKeyDown = async (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      setIsLoadingCities(true); // Set loading state to true
       await handleCitySearch(city);
+      setIsLoadingCities(false); // Reset loading state after search
     }
   };
 
@@ -142,11 +155,16 @@ function AlertCreationPageContent() {
               onKeyDown={handleCityInputKeyDown}
             />
             {showDropdown && (cityOptions.length > 0 || isLoadingCities) && (
-              <CityDropdown
-                data={cityOptions}
-                isLoading={isLoadingCities}
-                onSelect={handleCitySelect}
-              />
+              <div className="mt-2">
+                {isLoadingCities ? ( // Show loading spinner if cities are loading
+                  <LoaderSpinner size="large" />
+                ) : (
+                  <CityDropdown
+                    data={cityOptions}
+                    onSelect={handleCitySelect}
+                  />
+                )}
+              </div>
             )}
           </div>
 
@@ -195,7 +213,11 @@ function AlertCreationPageContent() {
           )}
 
           <div>
-            <PrimaryButton text="Create Alert" onClick={handleCreateAlert} />
+            {isSearching ? ( // Conditional rendering for loading spinner
+              <LoaderSpinner size="medium" />
+            ) : (
+              <PrimaryButton text="Create Alert" onClick={handleCreateAlert} />
+            )}
           </div>
 
           {searchResult && (
