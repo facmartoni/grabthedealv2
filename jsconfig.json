@@ -1,7 +1,22 @@
 {
   "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/components/*": ["app/components/*"],
+      "@/app/*": ["app/*"],
+      "@/utils/*": ["utils/*"]
     }
-  }
+  },
+  "include": ["**/*.js", "**/*.jsx", "utils/cn.ts"],
+  "exclude": ["node_modules"]
 }
