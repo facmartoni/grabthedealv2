@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchInput from "@/components/search-input/search-input";
 import PriceInput from "@/components/price-input/price-input";
 import PrimaryButton from "@/components/primary-button/primary-button";
 import CityDropdown from "@/components/city-dropdown/city-dropdown";
 import { searchCity } from "@/app/actions/search-city/search-city";
 import { searchProducts } from "@/app/actions/search-products/search-products";
-import ThemeSwitch from "@/components/theme-switch";
+import ThemeSwitcher from "@/components/theme-switcher"; // Change to ThemeSwitcher
 import { ThemeProvider, useTheme } from "@/components/theme-provider";
-import LoaderSpinner from "@/components/loader-spinner/loader-spinner";
+import LoaderSpinner from "@/components/loader-spinner/loader-spinner"; // Change to LoaderSpinner from "@/components/loader/loader-spinner";
 
 function AlertCreationPageContent() {
   const { theme } = useTheme();
@@ -25,6 +25,19 @@ function AlertCreationPageContent() {
   const [finalCity, setFinalCity] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSearching, setIsSearching] = useState(false); // Added state for loading spinner
+  const [systemTheme, setSystemTheme] = useState("light"); // Ensure this is the only instance of systemTheme
+
+  useEffect(() => {
+    // Added useEffect for theme detection
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setSystemTheme(mediaQuery.matches ? "dark" : "light");
+
+    const handler = (e) => setSystemTheme(e.matches ? "dark" : "light");
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
+
+  const currentTheme = theme === "system" ? systemTheme : theme; // Determine current theme
 
   const handleProductSearch = (value) => {
     setProduct(value);
@@ -134,7 +147,7 @@ function AlertCreationPageContent() {
 
   return (
     <div
-      className={`min-h-screen ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
+      className={`min-h-screen ${currentTheme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
     >
       <div className="flex h-screen items-center justify-center">
         <div className="mx-auto flex max-w-[584px] flex-col items-center space-y-6 p-4">
@@ -191,7 +204,9 @@ function AlertCreationPageContent() {
               <div className="flex flex-1 flex-col justify-end">
                 <label
                   htmlFor="noPriceRange"
-                  className={`flex h-10 cursor-pointer items-center justify-center text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                  className={`flex h-10 cursor-pointer items-center justify-center text-sm ${
+                    currentTheme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -222,7 +237,7 @@ function AlertCreationPageContent() {
 
           {searchResult && (
             <div
-              className={`mt-4 w-full rounded-md p-4 ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
+              className={`mt-4 w-full rounded-md p-4 ${currentTheme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}
             >
               <h2 className="mb-2 text-lg font-semibold">Search Result:</h2>
               <pre className="whitespace-pre-wrap">
@@ -241,7 +256,7 @@ export default function AlertCreationPage() {
     <ThemeProvider>
       <div className="relative">
         <div className="absolute right-4 top-4 z-10">
-          <ThemeSwitch />
+          <ThemeSwitcher />
         </div>
         <AlertCreationPageContent />
       </div>

@@ -23,7 +23,9 @@ export default function PrimaryButton({
   return (
     <Button
       onClick={handleClick}
-      className={`rounded-lg bg-[#1877F2] px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-[#1664D9] ${isAnimating ? "animate-wiggle" : ""} ${theme === "dark" ? "hover:bg-[#1664D9]" : "hover:bg-[#1664D9]"}`}
+      className={`rounded-lg bg-[#1877F2] px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-[#1664D9] ${
+        isAnimating ? "animate-wiggle" : ""
+      } ${theme === "dark" ? "hover:bg-[#1664D9]" : "hover:bg-[#1664D9]"}`}
     >
       {text}
     </Button>
