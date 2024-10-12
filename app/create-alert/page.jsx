@@ -10,6 +10,7 @@ import ThemeSwitcher from "@/components/theme-switcher"; // Change to ThemeSwitc
 import { ThemeProvider, useTheme } from "@/components/theme-provider";
 import LoaderSpinner from "@/components/loader-spinner/loader-spinner"; // Change to LoaderSpinner from "@/components/loader/loader-spinner";
 import ProductResult from "@/components/products-result/product-result";
+import { Button } from "@/components/ui/button";
 
 function AlertCreationPageContent() {
   const { theme } = useTheme();
@@ -34,6 +35,7 @@ function AlertCreationPageContent() {
   const maxPriceInputRef = useRef(null);
   const cityDropdownRef = useRef(null);
   const [searchParams, setSearchParams] = useState(null);
+  const [isSelectingCity, setIsSelectingCity] = useState(false);
 
   useEffect(() => {
     // Added useEffect for theme detection
@@ -160,11 +162,41 @@ function AlertCreationPageContent() {
     }
   };
 
+  const handleBackToSearch = () => {
+    setSearchParams(null);
+  };
+
+  const handleContinue = () => {
+    // TODO: Implement continue functionality
+    console.log("Continue button clicked");
+  };
+
   return (
     <div
       className={`min-h-screen ${currentTheme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}`}
     >
-      {!searchParams ? (
+      {searchParams ? (
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="mb-6 mt-12 text-center text-2xl font-bold">
+            Is this what you are searching for?
+          </h1>
+          <div className="mb-6 flex justify-center space-x-4">
+            <Button
+              onClick={handleContinue}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              Yes, Continue
+            </Button>
+            <Button
+              onClick={handleBackToSearch}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              No, Back to Search
+            </Button>
+          </div>
+          <ProductResult searchParams={searchParams} />
+        </div>
+      ) : (
         <div className="flex h-screen items-center justify-center">
           <div className="mx-auto flex w-full max-w-[584px] flex-col items-center space-y-6 p-4">
             <div className="w-full">
@@ -250,16 +282,17 @@ function AlertCreationPageContent() {
                   </div>
                 </div>
 
-                {errorMessage && ( // Error message display
+                {errorMessage && (
                   <div className="mb-2 w-full text-sm text-red-500">
                     {errorMessage}
                   </div>
                 )}
 
-                <div>
+                <div className="flex justify-center pt-4">
                   <PrimaryButton
                     text="Create Alert"
                     onClick={handleCreateAlert}
+                    disabled={isLoadingCities}
                   />
                 </div>
               </div>
@@ -277,8 +310,6 @@ function AlertCreationPageContent() {
             )}
           </div>
         </div>
-      ) : (
-        <ProductResult searchParams={searchParams} />
       )}
     </div>
   );
