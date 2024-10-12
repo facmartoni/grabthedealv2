@@ -43,23 +43,33 @@ function AlertCreationPageContent() {
     setProduct(value);
   };
 
-  const handleCitySearch = async (value) => {
-    setCity(value);
+  const handleCitySearch = async (value, isEnterKey = false) => {
+    if (!isEnterKey) {
+      setCity(value);
+    }
     if (value) {
       setIsLoadingCities(true);
-      const result = await searchCity(value, "false");
-      setIsLoadingCities(false);
+      try {
+        const result = await searchCity(value, "false");
 
-      if (result.success && result.data) {
-        setCityOptions(result.data.data);
-        setShowDropdown(true);
-      } else {
+        if (result.success && result.data) {
+          setCityOptions(result.data.data);
+          setShowDropdown(true);
+        } else {
+          setCityOptions([]);
+          setShowDropdown(false);
+        }
+      } catch (error) {
+        console.error("Error searching city:", error);
         setCityOptions([]);
         setShowDropdown(false);
+      } finally {
+        setIsLoadingCities(false);
       }
     } else {
       setCityOptions([]);
       setShowDropdown(false);
+      setIsLoadingCities(false);
     }
   };
 
@@ -71,15 +81,19 @@ function AlertCreationPageContent() {
 
     setIsLoadingCities(true);
     console.log("Loading cities for:", selectedCity.slice(0, -1));
-    const result = await searchCity(selectedCity, "true");
-    setIsLoadingCities(false);
-
-    if (result.success && result.data) {
-      console.log("City search result:", result.data.data);
-      setFinalCity(result.data.data);
-    } else {
-      console.log("City search failed:", result.error);
-      setFinalCity("");
+    try {
+      const result = await searchCity(selectedCity, "true");
+      if (result.success && result.data) {
+        console.log("City search result:", result.data.data);
+        setFinalCity(result.data.data);
+      } else {
+        console.log("City search failed:", result.error);
+        setFinalCity("");
+      }
+    } catch (error) {
+      console.error("Error selecting city:", error);
+    } finally {
+      setIsLoadingCities(false);
     }
   };
 
@@ -139,9 +153,21 @@ function AlertCreationPageContent() {
   const handleCityInputKeyDown = async (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      setIsLoadingCities(true); // Set loading state to true
-      await handleCitySearch(city);
-      setIsLoadingCities(false); // Reset loading state after search
+      setIsLoadingCities(true);
+      setShowDropdown(true);
+      try {
+        const result = await searchCity(city, "false");
+        if (result.success && result.data) {
+          setCityOptions(result.data.data);
+        } else {
+          setCityOptions([]);
+        }
+      } catch (error) {
+        console.error("Error searching city:", error);
+        setCityOptions([]);
+      } finally {
+        setIsLoadingCities(false);
+      }
     }
   };
 
