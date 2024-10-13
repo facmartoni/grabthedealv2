@@ -1,7 +1,6 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "@/components/theme-provider";
 import { useEffect, useState, forwardRef } from "react";
 
@@ -51,7 +50,7 @@ const CityDropdown = forwardRef(
                     ? "border-gray-700 hover:bg-gray-700"
                     : "border-gray-200 hover:bg-gray-100"
                 } p-2 last:border-b-0`}
-                onClick={() => onSelect(item.firstValue)}
+                onClick={() => onSelect(item.firstValue, index)}
               >
                 <p
                   className={`font-medium ${

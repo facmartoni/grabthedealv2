@@ -25,7 +25,7 @@ const SearchInput = forwardRef(
       <div className="mx-auto w-full max-w-[584px]">
         <Label
           htmlFor="search"
-          className={`mb-2 block text-center text-sm font-medium ${
+          className={`mb-2 block text-center text-base font-medium ${
             currentTheme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >

@@ -25,7 +25,6 @@ function AlertCreationPageContent() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [finalCity, setFinalCity] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSearching, setIsSearching] = useState(false); // Added state for loading spinner
   const [systemTheme, setSystemTheme] = useState("light"); // Ensure this is the only instance of systemTheme
   const [showCityInput, setShowCityInput] = useState(false); // New state variable for city input visibility
   const [showAdditionalInputs, setShowAdditionalInputs] = useState(false); // New state variable for additional inputs visibility
@@ -35,7 +34,6 @@ function AlertCreationPageContent() {
   const maxPriceInputRef = useRef(null);
   const cityDropdownRef = useRef(null);
   const [searchParams, setSearchParams] = useState(null);
-  const [isSelectingCity, setIsSelectingCity] = useState(false);
 
   useEffect(() => {
     // Added useEffect for theme detection
@@ -71,24 +69,34 @@ function AlertCreationPageContent() {
     }
   };
 
-  const handleCitySelect = async (selectedCity) => {
-    console.log("Selected city:", selectedCity);
-    setCity(selectedCity);
+  const handleCitySelect = async (selectedCity, nSelection) => {
+    console.log("Selected city:", selectedCity, "Selection index:", nSelection);
     setShowDropdown(false);
     setCityOptions([]);
 
     setIsLoadingCities(true);
     console.log("Loading cities for:", selectedCity);
     try {
-      let result = await searchCity(selectedCity, "true");
-      while (result.success === false || result.data.data === "unknown") {
-        result = await searchCity(selectedCity.slice(0, -1), "true");
-      }
+      let result;
+      let startTime = Date.now();
+      do {
+        console.log("Sending index to server:", nSelection);
+        console.log("Sending city to server:", city);
+        result = await searchCity(city, "true", nSelection);
+        setCity(selectedCity);
+        if (Date.now() - startTime > 3000) {
+          console.log("Retrying city search...");
+          startTime = Date.now();
+        }
+      } while (
+        (result.success === false || result.data.data === "unknown") &&
+        Date.now() - startTime <= 3000
+      );
+
       if (result.success && result.data) {
         console.log("City search result:", result.data.data);
         setFinalCity(result.data.data);
         setShowAdditionalInputs(true);
-        // Focus the min price input after setting the state
         requestAnimationFrame(() => {
           minPriceInputRef.current?.focus();
         });
@@ -228,7 +236,9 @@ function AlertCreationPageContent() {
                       <CityDropdown
                         ref={cityDropdownRef}
                         data={cityOptions}
-                        onSelect={handleCitySelect}
+                        onSelect={(city, index) =>
+                          handleCitySelect(city, index)
+                        }
                       />
                     )}
                   </div>
