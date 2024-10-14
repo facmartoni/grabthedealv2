@@ -19,7 +19,6 @@ const CityDropdown = forwardRef(
     }, []);
 
     const currentTheme = theme === "system" ? systemTheme : theme;
-    console.log("CityDropdown render - data:", data, "isLoading:", isLoading);
 
     const items = Array.isArray(data) ? data.slice(0, 5) : [];
 
@@ -74,7 +73,7 @@ const CityDropdown = forwardRef(
                 currentTheme === "dark" ? "text-gray-400" : "text-gray-500"
               }`}
             >
-              No items to display (Dropdown is visible)
+              No items to display
             </div>
           )}
         </ScrollArea>

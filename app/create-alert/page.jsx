@@ -34,6 +34,7 @@ function AlertCreationPageContent() {
   const maxPriceInputRef = useRef(null);
   const cityDropdownRef = useRef(null);
   const [searchParams, setSearchParams] = useState(null);
+  const [noCitiesFound, setNoCitiesFound] = useState(false);
 
   useEffect(() => {
     // Added useEffect for theme detection
@@ -53,10 +54,23 @@ function AlertCreationPageContent() {
 
   const handleCitySearch = async (value) => {
     setCity(value);
+    setNoCitiesFound(false);
     if (value) {
       try {
+        setIsLoadingCities(true);
         const result = await searchCity(value, "false");
-        setCityOptions(result.success && result.data ? result.data.data : []);
+        if (
+          result.success &&
+          result.data.data &&
+          result.data.data.status === 404
+        ) {
+          setCityOptions([]);
+          setNoCitiesFound(true);
+        } else {
+          setCityOptions(
+            result.success && result.data.data ? result.data.data : [],
+          );
+        }
       } catch (error) {
         console.error("Error searching city:", error);
         setCityOptions([]);
@@ -70,22 +84,17 @@ function AlertCreationPageContent() {
   };
 
   const handleCitySelect = async (selectedCity, nSelection) => {
-    console.log("Selected city:", selectedCity, "Selection index:", nSelection);
     setShowDropdown(false);
     setCityOptions([]);
 
     setIsLoadingCities(true);
-    console.log("Loading cities for:", selectedCity);
     try {
       let result;
       let startTime = Date.now();
       do {
-        console.log("Sending index to server:", nSelection);
-        console.log("Sending city to server:", city);
         result = await searchCity(city, "true", nSelection);
         setCity(selectedCity);
         if (Date.now() - startTime > 3000) {
-          console.log("Retrying city search...");
           startTime = Date.now();
         }
       } while (
@@ -94,14 +103,12 @@ function AlertCreationPageContent() {
       );
 
       if (result.success && result.data) {
-        console.log("City search result:", result.data.data);
         setFinalCity(result.data.data);
         setShowAdditionalInputs(true);
         requestAnimationFrame(() => {
           minPriceInputRef.current?.focus();
         });
       } else {
-        console.log("City search failed:", result.error);
         setFinalCity("");
         cityInputRef.current?.focus();
       }
@@ -228,6 +235,11 @@ function AlertCreationPageContent() {
                   onKeyDown={handleCityInputKeyDown}
                   ref={cityInputRef}
                 />
+                {noCitiesFound && (
+                  <div className="mt-2 text-sm text-red-500">
+                    No cities found. Please try a different search.
+                  </div>
+                )}
                 {(isLoadingCities || cityOptions.length > 0) && (
                   <div className="mt-2">
                     {isLoadingCities ? (
